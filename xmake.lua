@@ -1,11 +1,12 @@
 -- xmake macro package -a x86_64 -o ../000_packages -p mingw
+add_packagedirs("../000_packages")
 
 set_project("002_libuv") 
 set_version("1.0.0", {build = "%Y%m%d%H%M"})
 set_xmakever("2.2.5")
 set_warnings("all", "error")
 
---set_languages("c99", "cxx11")
+set_languages("gnu99", "cxx11")
 
 add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing", 
     "-Wno-error=unused-parameter", "-Wno-error=implicit-fallthrough",
@@ -48,3 +49,22 @@ target("uv-1.0.0")
         add_defines("MINGW") 
         add_files("libuv/win/*.c")
     end
+
+target("uvdrv")  
+    set_kind("shared")
+    add_deps("uv-1.0.0")
+    add_includedirs("libuv") 
+    add_files("uvdrv/*.c", "uvdrv/*.cpp")
+    add_packages("lualib-5.3.6", {links = "lualib-5.3.6"})
+    add_links("uv-1.0.0")
+    add_rules("binaryrule")
+    if is_plat("linux") then
+        add_links("dl", "pthread")
+    elseif is_plat("mingw") then
+        add_links("ws2_32", "psapi", "iphlpapi")
+    end 
+
+rule("binaryrule")
+    set_extensions(".so", ".dll")  
+    after_package(function (target)
+    end)
