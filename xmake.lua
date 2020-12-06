@@ -68,3 +68,16 @@ rule("binaryrule")
     set_extensions(".so", ".dll")  
     after_package(function (target)
     end)
+
+target("postprocess")
+    set_kind("phony")
+    add_deps("uvdrv", "uv-1.0.0") 
+    after_package(function (target)
+        local srcdir  =  "$(projectdir)/lualib"
+        local destdir1 = "../000_packages/uv-1.0.0.pkg/lualib"
+        local destdir2 = "../000_packages/uv-1.0.0.pkg"
+        if os.exists(destdir1) then os.rm(destdir1) end 
+
+        print("package " .. srcdir .. " => " .. destdir2) 
+        os.cp(srcdir, destdir2) 
+    end)     
