@@ -74,8 +74,8 @@ target("postprocess")
     add_deps("uvdrv", "uv-1.0.0") 
     after_package(function (target)
         local srcdir  =  "$(projectdir)/lualib"
-        local destdir1 = "../000_packages/uv-1.0.0.pkg/lualib"
-        local destdir2 = "../000_packages/uv-1.0.0.pkg"
+        local destdir1 = "../000_packages/uvdrv.pkg/lualib"
+        local destdir2 = "../000_packages/uvdrv.pkg"
         if os.exists(destdir1) then os.rm(destdir1) end 
 
         print("package " .. srcdir .. " => " .. destdir2) 
