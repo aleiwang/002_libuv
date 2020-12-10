@@ -8,6 +8,7 @@ local uvdriver = {
 	util  		= require("uvdriver.util"), 
 	timeout 	= require("uvdriver.timeout"),
 	queue 		= require("uvdriver.queue"),
+	socketdef   = require("uvdriver.socket"),
 }
 
 return uvdriver 

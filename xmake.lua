@@ -59,8 +59,10 @@ target("uvdrv")
     add_links("uv-1.0.0")
     add_rules("binaryrule")
     if is_plat("linux") then
+        set_filename("uvdrv.so") 
         add_links("dl", "pthread")
     elseif is_plat("mingw") then
+        set_filename("uvdrv.dll") 
         add_links("ws2_32", "psapi", "iphlpapi")
     end 
 

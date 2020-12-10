@@ -37,6 +37,11 @@ typedef struct {
      uv_buf_t   buf;
 } write_req_t;
 
+typedef struct {
+     uv_udp_send_t req;
+     uv_buf_t   buf;
+} udp_send_req_t;
+
 INLINE static void _add_unsigned_constant(lua_State *L, const char* name, unsigned int value) {
     lua_pushinteger(L, value);
     lua_setfield(L, -2, name);
@@ -255,14 +260,14 @@ INLINE static void setloop(lua_State *L, uv_loop_t *loop) {
     WATCHER_METAMETHOD_ITEM(type, stop), \
     WATCHER_METAMETHOD_ITEM(type, is_active) 
 
-#define WATCHER_COMMON_METHODS_TCP(type) \
+#define WATCHER_COMMON_METHODS_SOCKET(type) \
     WATCHER_NEW(type) \
     WATCHER_GET(type) \
     WATCHER_TOSTRING(type) \
     WATCHER_ID(type) \
     WATCHER_IS_ACTIVE(type) 
 
-#define WATCHER_METAMETHOD_TABLE_TCP(type) \
+#define WATCHER_METAMETHOD_TABLE_SOCKET(type) \
     WATCHER_METAMETHOD_ITEM(type, id), \
     WATCHER_METAMETHOD_ITEM(type, is_active)     
 

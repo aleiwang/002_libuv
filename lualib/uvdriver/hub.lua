@@ -28,6 +28,7 @@ function Hub:wait(watcher, ...)
     local ok, val = xpcall(waiter.get, debug.traceback, waiter)
     watcher:stop()
     if ok then
+        return waiter:get() 
     else
         error(val)
     end
@@ -109,8 +110,8 @@ function Waiter:throw(exception)
 end
 
 -- for Watcher
-function Waiter:__call(value)
-    self:_switch(value, nil)
+function Waiter:__call(argsInput, argsOutput)
+    self:_switch(argsOutput, nil)
 end
 
 function Waiter:get()

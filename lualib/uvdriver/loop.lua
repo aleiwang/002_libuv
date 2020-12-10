@@ -1,9 +1,9 @@
-local class 	= require "uvdriver.class"
-local c    	    = require "uvdrv.c"   
-local tcp       = require "uvdrv.tcp" 
-local Watcher 	= class("Watcher")
-local TcpWatcher= class("TcpWatcher", Watcher)
-local Loop 		= class("Loop") 
+local class 	    = require "uvdriver.class"
+local c    	        = require "uvdrv.c"   
+local tcp           = require "uvdrv.tcp" 
+local Watcher 	    = class("Watcher")
+local SocketWatcher = class("SocketWatcher", Watcher)
+local Loop 		    = class("Loop") 
 
 local tpack = table.pack
 local tunpack = table.unpack
@@ -54,6 +54,12 @@ function Watcher:run_callback( ... )
     if select("#", ...) > 0 then
         self._args_output = tpack(...)
     end   	
+
+    if self._cb == nil then 
+        print("watcher with no callback ", self:id()) 
+        return 
+    end 
+
     local ok, msg = xpcall(self._cb, debug.traceback, self._args_input, self._args_output)
     if not ok then
         self.loop:handle_error(self, msg)
@@ -65,24 +71,32 @@ function Watcher:is_active()
 end
 
 function Watcher:__tostring()
-    return tostring(self.cobj)
+    return tostring(c.topointer(self.cobj))
 end
 
 function Watcher:__gc()
     self:stop()
 end
 
-
-function TcpWatcher:_init(name, loop)
-    self.loop = loop
-    local w = tcp["new_" .. name](self.loop.cobj)  
-    self.cobj = w
-    self._cb = nil
-    self._args_input = nil
-    self._args_output = nil
+function SocketWatcher:__tostring()
+    return self.strid
 end
 
-function TcpWatcher:start(func, ...)
+function SocketWatcher:_init(name, loop, streamCObj, nEvent)
+    self.loop = loop
+    self.cobj = streamCObj 
+    self._cb = nil 
+    self._args_input = nil 
+    self._args_output = nil 
+    self.event = nEvent 
+    self.strid = string.format("%s_%d", tostring(c.topointer(self.cobj)), self.event) 
+end
+
+function SocketWatcher:id()
+    return self.strid 
+end
+
+function SocketWatcher:start(func, ...)
     assert(self._cb == nil, self.cobj)
     self._cb = func
     if select("#", ...) > 0 then
@@ -90,43 +104,10 @@ function TcpWatcher:start(func, ...)
     end 
 end
 
-function TcpWatcher:onclosed()
+function SocketWatcher:stop()
     self._cb = nil
     self._args_input = nil
     self._args_output = nil
-end
-
-function TcpWatcher:stop()
-    self:close()
-end
-
-function TcpWatcher:bind(strIp, nPort) 
-    return self.cobj:bind(strIp, nPort) 
-end
-
-function TcpWatcher:connect(strIp, nPort) 
-    return self.cobj:connect(strIp, nPort) 
-end
-
-function TcpWatcher:listen( nMaxLen ) 
-    return self.cobj:listen(nMaxLen) 
-end
-
-function TcpWatcher:accept()  
-    local newTcp = self.loop:tcp() 
-    return newTcp, self.cobj:accept(newTcp.cobj) 
-end
-
-function TcpWatcher:read()  
-    return self.cobj:read() 
-end
-
-function TcpWatcher:close()  
-    self.cobj:close() 
-end
-
-function TcpWatcher:write( lstring ) 
-    return self.cobj:write( lstring )  
 end
 
 function Loop:_init()
@@ -188,8 +169,8 @@ end
 
 function Loop:_create_watcher(name, ...)
     local o 
-    if name == "tcp" then 
-        o = TcpWatcher.new(name, self, ...)
+    if name == "socket" then 
+        o = SocketWatcher.new(name, self, ...)
     else 
         o = Watcher.new(name, self, ...)
     end 
@@ -205,8 +186,8 @@ function Loop:signal()
     return self:_create_watcher("signal")
 end
 
-function Loop:tcp()
-    return self:_create_watcher("tcp")
+function Loop:socket_watcher(socketcobj, nevent) 
+    return self:_create_watcher("socket", socketcobj, nevent)
 end
 
 function Loop:callback(id, ...)

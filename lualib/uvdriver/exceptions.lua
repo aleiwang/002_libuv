@@ -17,6 +17,17 @@ function CancelWaitError:__tostring()
     return "CancelWaitError"
 end
 
+local DnsError = class("DnsError", BaseException)
+function DnsError:_init(info)
+    self.info = info
+end
+function DnsError:__tostring()
+    if self.info then
+        return "DnsError:" .. self.info
+    end
+    return "DnsError"
+end
+
 local KillError = class("KillError", BaseException)
 function KillError:__tostring()
     return "KillError"
@@ -25,6 +36,7 @@ end
 local all = {}
 all.BaseException = BaseException
 all.CancelWaitError = CancelWaitError 
+all.DnsError = DnsError
 all.KillError = KillError
 
 function all.is_exception(exception)
