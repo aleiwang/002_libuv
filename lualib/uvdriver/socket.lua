@@ -88,7 +88,7 @@ function SocketUdp:sendto( ip, port, lstring )
     end     
 end
 
-function SocketUdp:read()  
+function SocketUdp:read(ms_timeout)  
     local cobj = self.cobj
     while true do
         local err = self.cobj:read_nohead() 
@@ -96,7 +96,7 @@ function SocketUdp:read()
             return nil, err
         end
 
-        local ok, exception = _wait(self.watcher_read, self.timeout)
+        local ok, exception = _wait(self.watcher_read, ms_timeout or self.timeout) 
         if not ok then
             return nil, exception
         else 
@@ -149,6 +149,10 @@ end
 
 function SocketTcp:getpeername()  
     return self.cobj:getpeername()
+end 
+
+function SocketTcp:getsockname()  
+    return self.cobj:getsockname()
 end 
 
 function SocketTcp:accept()  

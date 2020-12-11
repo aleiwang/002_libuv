@@ -10,7 +10,7 @@ function util.read_message(conn, parser, left)
         if left then
             s = left
         else
-            local ok, data_or_err = conn:read()
+            local ok, data_or_err = conn:read(1000)
             if not ok then 
                 return nil, data_or_err
             end 

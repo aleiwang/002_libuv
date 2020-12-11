@@ -564,6 +564,31 @@ static int tcp_write(lua_State *L) {
     return 1;     
 }
 
+static int tcp_getsockname(lua_State *L) { 
+    uv_tcp_t * client = get_tcp(L, 1); 
+
+    struct sockaddr addrlo1;
+    struct sockaddr_in addrin1;  
+    int addrlen1 = sizeof(addrlo1);
+    char sockname1[17] = {0};
+  
+    int ret1 = uv_tcp_getsockname((const uv_tcp_t *)client,&addrlo1,&addrlen1);
+    if(0 ==  ret1) { 
+        addrin1 = *((struct sockaddr_in*)&addrlo1);
+        uv_ip4_name(&addrin1,sockname1,addrlen1);
+        //printf("re %s:%d From %s:%d \n",sockname1, ntohs(addrin1.sin_port),socknamepeer1, ntohs(addrinpeer1.sin_port));  
+
+        lua_pushinteger(L, 0);
+        lua_pushfstring(L, "%s", sockname1);
+        lua_pushinteger(L, ntohs(addrin1.sin_port));
+        return 3; 
+    }
+    else {
+        lua_pushinteger(L, 1);
+        return 1;         
+    }
+}
+
 static int tcp_getpeername(lua_State *L) { 
     uv_tcp_t * client = get_tcp(L, 1); 
 
@@ -630,6 +655,7 @@ static const struct luaL_Reg methods_tcp[] = {
     {"close",        tcp_close}, 
     {"connect",      tcp_connect}, 
     {"getpeername",  tcp_getpeername}, 
+    {"getsockname",  tcp_getsockname}, 
     {NULL, NULL}
 };
 METATABLE_BUILDER(tcp, WATCHER_METATABLE(tcp))
